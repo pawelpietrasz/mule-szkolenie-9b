@@ -1,0 +1,11 @@
+.project
+.classpath
+
+.buildpath
+.settings/
+.mule/
+.studio/
+flows/
+target/
+src/main/api/.repository/
+catalog/

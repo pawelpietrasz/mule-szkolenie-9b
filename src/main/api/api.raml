@@ -1,0 +1,43 @@
+#%RAML 1.0
+title: test
+mediaType: application/json
+
+/countries:
+  /{country}:
+    /cities:
+      get:
+        responses: 
+          200:
+            body:
+      post:
+        body:
+          application/json:
+            example: |
+              {
+                "name": "Warszawa",
+                "code": "WA",
+                "location": {
+                  "lat": 52.2,
+                  "long": 21.0 
+                }
+              }
+        responses:
+            200:
+              body:
+                application/json:
+                  example: | 
+                    {
+                      "id": "Warszawa - Wa",
+                      "geo": "(52.2, 21.0)"
+                    }
+              
+
+/weather:
+  get:
+    queryParameters: 
+      city: 
+      country:
+    responses:
+      200:
+        body:
+  

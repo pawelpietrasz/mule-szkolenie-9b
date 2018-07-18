@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ws="http://www.mulesoft.org/schema/mule/ws" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ws http://www.mulesoft.org/schema/mule/ws/current/mule-ws.xsd
+http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+    <flow name="get:/weather-flow">
+        <set-payload value="&lt;soap:Envelope xmlns:soap=&quot;http://www.w3.org/2003/05/soap-envelope&quot; xmlns:web=&quot;http://www.webserviceX.NET&quot;&gt;
+   &lt;soap:Header/&gt;
+   &lt;soap:Body&gt;
+      &lt;web:GetWeather&gt;
+         &lt;web:CityName&gt;Warszawa&lt;/web:CityName&gt;
+         &lt;web:CountryName&gt;Polska&lt;/web:CountryName&gt;
+      &lt;/web:GetWeather&gt;
+   &lt;/soap:Body&gt;
+&lt;/soap:Envelope&gt;" mimeType="application/xml" doc:name="Set Payload"/>
+        <set-property propertyName="Authorization" value="Basic: dXNlcjpwYXNz" doc:name="Auth Property"/>
+        <ws:consumer config-ref="Web_Service_Consumer" operation="GetWeather" doc:name="Web Service Consumer"/>
+        <mulexml:jaxb-xml-to-object-transformer returnClass="pl.com.sages.training.xml.GetWeatherResponse" jaxbContext-ref="JAXB_Context" doc:name="XML to JAXB Object"/>
+        <set-payload value="{
+	&quot;forecast&quot;: &quot;#[payload.result]&quot;
+}" doc:name="Set Payload"/>
+    </flow>
+    <flow name="get:/countries/{country}/cities-flow">
+        <set-payload value="&lt;soap:Envelope xmlns:soap=&quot;http://www.w3.org/2003/05/soap-envelope&quot; xmlns:web=&quot;http://www.webserviceX.NET&quot;&gt;
+   &lt;soap:Header/&gt;
+   &lt;soap:Body&gt;
+      &lt;web:GetCitiesByCountry&gt;
+         &lt;web:CountryName&gt;Polska&lt;/web:CountryName&gt;
+      &lt;/web:GetCitiesByCountry&gt;
+   &lt;/soap:Body&gt;
+&lt;/soap:Envelope&gt;" mimeType="application/xml" doc:name="Set Payload"/>
+        <ws:consumer config-ref="Web_Service_Consumer" operation="GetCitiesByCountry" doc:name="Web Service Consumer"/>
+        <set-payload value="{
+	&quot;result&quot;: &quot;#[xpath3('//*:GetCitiesByCountryResult')]&quot;
+}" doc:name="Set Payload"/>
+    </flow>
+    <flow name="post:/countries/{country}/cities-flow">
+        <json:json-to-object-transformer doc:name="JSON to Object" returnClass="java.lang.Object"/>
+        <parse-template location="tmpl/json-to-json-simple.tpl" doc:name="Parse Template"/>
+    </flow>
+</mule>

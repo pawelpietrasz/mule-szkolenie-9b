@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+    <munit:config name="munit" doc:name="MUnit configuration"/>
+    <spring:beans>
+        <spring:import resource="classpath:weather-service-impl.xml"/>
+    </spring:beans>
+    <munit:test name="weather-service-impl-test-suite-getCitiesByCountry-flowTest" description="Test">
+        <set-payload value=" &lt;web:GetCitiesByCountry xmlns:web=&quot;http://www.webserviceX.NET&quot;&gt;          &lt;web:CountryName&gt;Polska&lt;/web:CountryName&gt;       &lt;/web:GetCitiesByCountry&gt; " mimeType="application/xml" doc:name="Set Payload"/>
+        <flow-ref name="getCitiesByCountry-flow" doc:name="Flow-ref to getCitiesByCountry-flow"/>
+        <munit:assert-not-null doc:name="Assert Not Null Payload"/>
+        <munit:assert-true message="Result does not exist" condition="#[xpath3('//*:GetCitiesByCountryResult') != empty]" doc:name="Assert True"/>
+        <munit:assert-true message="Result does not contain Polska" condition="#[xpath3('//*:GetCitiesByCountryResult[contains(.,&quot;Polska&quot;)]') != empty]" doc:name="Assert True"/>
+    </munit:test>
+    <munit:test name="weather-service-impl-test-getCitiesByCountry-USA-suiteTest" description="MUnit Test">
+        <set-payload value=" &lt;web:GetCitiesByCountry xmlns:web=&quot;http://www.webserviceX.NET&quot;&gt;
+         &lt;web:CountryName&gt;USA&lt;/web:CountryName&gt;
+      &lt;/web:GetCitiesByCountry&gt;
+" mimeType="application/xml" doc:name="Set Payload"/>
+        <flow-ref name="getCitiesByCountry-flow" doc:name="Flow Reference"/>
+        <munit:assert-not-null doc:name="Assert Not Null Payload"/>
+        <munit:assert-true message="Result does contain Polska string" condition="#[xpath3('//*:GetCitiesByCountryResult[contains(.,&quot;Polska&quot;)]') == empty]" doc:name="Assert True"/>
+    </munit:test>
+</mule>

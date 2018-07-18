@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/current/mule-cxf.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
+    <flow name="weather-service-main-flow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/weather" allowedMethods="POST,GET" doc:name="HTTP"/>
+        <cxf:proxy-service configuration-ref="CXF_Configuration" port="GlobalWeatherSoap12" namespace="http://www.webserviceX.NET" service="GlobalWeather" payload="body" wsdlLocation="wsdl/weather.wsdl" doc:name="CXF"/>
+        <logger level="INFO" doc:name="Logger"/>
+        <choice doc:name="Choice">
+            <when expression="#[flowVars.cxf_operation.toString()=='{http://www.webserviceX.NET}GetCitiesByCountry']">
+                <flow-ref name="getCitiesByCountry-flow" doc:name="getCitiesByCountry"/>
+            </when>
+            <when expression="#[flowVars.cxf_operation.toString()=='{http://www.webserviceX.NET}GetWeather']">
+                <flow-ref name="getWeather-flow" doc:name="getWeather"/>
+            </when>
+            <otherwise>
+                <scripting:component doc:name="Groovy">
+                    <scripting:script engine="Groovy"><![CDATA[throw new Exception("Operation not implemented");]]></scripting:script>
+                </scripting:component>
+            </otherwise>
+        </choice>
+    </flow>
+</mule>
